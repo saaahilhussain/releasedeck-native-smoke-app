@@ -1,0 +1,15 @@
+{
+  "name": "releasedeck-native-smoke-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minimal smoke-test application for ReleaseDeck native deployments",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "license": "UNLICENSED"
+}
