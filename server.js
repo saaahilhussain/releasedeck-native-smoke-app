@@ -19,8 +19,8 @@ function loadEnvironment() {
 
 function handleRequest(request, response) {
   if (request.method === 'GET' && request.url === '/health') {
-    response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
-    response.end('{"status":"ok"}\n');
+    response.writeHead(503, { 'content-type': 'application/json; charset=utf-8' });
+    response.end('{"status":"unhealthy"}\n');
     return;
   }
 
