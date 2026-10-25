@@ -1,47 +1,36 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const { once } = require('node:events');
-const http = require('node:http');
 const test = require('node:test');
 
-const { createServer } = require('../server.js');
+const { handleRequest } = require('../server.js');
 
-async function request(server, path) {
-  const address = server.address();
-  return new Promise((resolve, reject) => {
-    const outgoing = http.get(
-      { host: '127.0.0.1', port: address.port, path },
-      (response) => {
-        response.setEncoding('utf8');
-        let body = '';
-        response.on('data', (chunk) => {
-          body += chunk;
-        });
-        response.on('end', () => resolve({ statusCode: response.statusCode, body }));
-      },
-    );
-    outgoing.on('error', reject);
-  });
+function request(method, url) {
+  const result = { body: '', headers: {}, statusCode: undefined };
+  const response = {
+    writeHead(statusCode, headers) {
+      result.statusCode = statusCode;
+      result.headers = { ...headers };
+    },
+    end(body = '') {
+      result.body += body;
+    },
+  };
+
+  handleRequest({ method, url }, response);
+  return result;
 }
 
-test('GET /health returns a minimal healthy response', async (t) => {
-  const server = createServer();
-  server.listen(0, '127.0.0.1');
-  await once(server, 'listening');
-  t.after(() => server.close());
-
-  const response = await request(server, '/health');
+test('GET /health returns a minimal healthy response', () => {
+  const response = request('GET', '/health');
   assert.equal(response.statusCode, 200);
+  assert.equal(response.headers['content-type'], 'application/json; charset=utf-8');
   assert.deepEqual(JSON.parse(response.body), { status: 'ok' });
 });
 
-test('unknown routes return 404', async (t) => {
-  const server = createServer();
-  server.listen(0, '127.0.0.1');
-  await once(server, 'listening');
-  t.after(() => server.close());
-
-  const response = await request(server, '/missing');
+test('unknown routes return 404', () => {
+  const response = request('GET', '/missing');
   assert.equal(response.statusCode, 404);
+  assert.equal(response.headers['content-type'], 'application/json; charset=utf-8');
+  assert.deepEqual(JSON.parse(response.body), { error: 'not_found' });
 });

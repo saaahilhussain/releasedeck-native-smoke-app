@@ -17,17 +17,19 @@ function loadEnvironment() {
   }
 }
 
-function createServer() {
-  return http.createServer((request, response) => {
-    if (request.method === 'GET' && request.url === '/health') {
-      response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
-      response.end('{"status":"ok"}\n');
-      return;
-    }
+function handleRequest(request, response) {
+  if (request.method === 'GET' && request.url === '/health') {
+    response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+    response.end('{"status":"ok"}\n');
+    return;
+  }
 
-    response.writeHead(404, { 'content-type': 'application/json; charset=utf-8' });
-    response.end('{"error":"not_found"}\n');
-  });
+  response.writeHead(404, { 'content-type': 'application/json; charset=utf-8' });
+  response.end('{"error":"not_found"}\n');
+}
+
+function createServer() {
+  return http.createServer(handleRequest);
 }
 
 function run() {
@@ -55,4 +57,4 @@ if (require.main === module) {
   run();
 }
 
-module.exports = { HOST, PORT, createServer, loadEnvironment };
+module.exports = { HOST, PORT, createServer, handleRequest, loadEnvironment };
